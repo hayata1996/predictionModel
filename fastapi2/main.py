@@ -1,12 +1,12 @@
-#i will mdify this code into prediction app
-
 from fastapi import FastAPI, HTTPException, Depends
-from typing import Annotated, List
+from typing import Annotated
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import SessionLocal, engine
 import models
 from fastapi.middleware.cors import CORSMiddleware
+import joblib
+import numpy as np
 
 app = FastAPI()
 origins = [
@@ -21,19 +21,29 @@ app.add_middleware(
     allow_headers=["*"]   # Allow all headers
 )
 
-#pydantic model
+# Load the pre-trained model
+model = joblib.load('model.pkl')
+
+# Pydantic model
 class TransactionBase(BaseModel):
     name: str
     men: bool
     age: int
     height: float
     
-#grand son of pydantic model
+# Pydantic model for prediction input
+class PredictionInput(BaseModel):
+    men: bool
+    height: float
+
+# Pydantic model for prediction output
+class PredictionOutput(BaseModel):
+    weight: float
+
 class TransactionModel(TransactionBase):
     id: int
     class Config:
         orm_mode = True
-
 
 def get_db():
     db = SessionLocal()
@@ -44,12 +54,9 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 models.Base.metadata.create_all(bind=engine)
-#creating table, column... when the server starts
-#
 
 @app.post("/transactions/", response_model=TransactionModel)
 async def create_transaction(transaction: TransactionBase, db: db_dependency):
-    #this models.Transaction is the class in models.py, which defines the table with 6 columns
     db_transaction = models.Transaction(**transaction.dict())
     db.add(db_transaction)
     db.commit()
@@ -61,10 +68,6 @@ async def read_transactions(db: db_dependency, skip: int = 0, limit: int = 200):
     transactions = db.query(models.Transaction).all()
     return transactions
 
-#under here is the codification today: 0622
-#add delete and update function to the server
-#originally written by GPT and modified by me
-#return should include 6columns, 5 plus id column
 @app.put("/transactions/{transaction_id}", response_model=TransactionModel)
 async def update_transaction(transaction_id: int, transaction: TransactionBase, db: db_dependency):
     db_transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
@@ -86,4 +89,12 @@ async def delete_transaction(transaction_id: int, db: db_dependency):
     db.delete(db_transaction)
     db.commit()
     return db_transaction
-    
+
+# Prediction endpoint
+@app.post("/predict/", response_model=PredictionOutput)
+async def predict(data: PredictionInput):
+    # Prepare the data for prediction
+    input_data = np.array([[data.men, data.height]])
+    # Make the prediction
+    predicted_weight = model.predict(input_data)[0]
+    return PredictionOutput(weight=predicted_weight)

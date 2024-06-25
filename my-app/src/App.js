@@ -1,125 +1,61 @@
-import React, {useState, useEffect} from 'react'
-import api from './api'
+import React, { useState } from 'react';
+import axios from 'axios';
 
-const App = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [formData, setFormData] = useState({
-    name: '',
-    men: false,
-    age: '',
-    height: ''
-  });
-//この辞書型は、formDataの初期値を設定している。
+function App() {
+  const [height, setHeight] = useState('');
+  const [men, setMen] = useState(true);
+  const [predictedWeight, setPredictedWeight] = useState(null);
 
-  const fetchTransactions = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await api.get('/transactions/');
-      setTransactions(response.data);
+      const response = await axios.post('http://localhost:8000/predict/', {
+        men,
+        height: parseFloat(height)
+      });
+      setPredictedWeight(response.data.weight);
     } catch (error) {
-      console.error('Failed to fetch transactions:', error);
+      console.error('There was an error predicting the weight!', error);
     }
   };
 
-  
-//after randering the component, fetch the transactions
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
-//if you take this ', []' out, it will run the fetchTransactions() infinitely, again and again and again....
-
-
-//checkbox の変更を検知するための関数
-  const handleInputChange = (event) => {
-    const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-    setFormData({
-      ...formData,
-      [event.target.name]: value
-    });
-  };
-
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
-    await api.post('/transactions/', formData);
-    fetchTransactions();
-    setFormData({
-      name: '',
-      men: false,
-      age: '',
-      height: ''
-    });
-  };
-
   return (
-    <div>
-      <nav className='navbar-dark bg-primary'>
-        <div className='container-fluid'>
-          <a className='navbar-brand' href='#'>
-            Weight Prediction App
-          </a>
+    <div className="App">
+      <h1>Weight Prediction</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>
+            Height:
+            <input
+              type="number"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              required
+            />
+          </label>
         </div>
-      </nav>  
-
-      <div className='container'>
-        <form onSubmit={handleFormSubmit}>
-
-          <div className='mb-3 mt-3'>
-            <label htmlFor='name' className='form-label'>
-              name
-            </label>
-            <input type='text' className='form-control' id='name' name='name' onChange={handleInputChange} value={formData.name}/>
-          </div>
-
-          <div className='mb-3'>
-            <label htmlFor='men' className='form-label'>
-              men
-            </label>
-            <input type='checkbox' id='men' name='men' onChange={handleInputChange} value={formData.men}/>
-          </div>
-
-          <div className='mb-3'>
-            <label htmlFor='age' className='form-label'>
-              age
-            </label>
-            <input type='text' className='form-control' id='age' name='age' onChange={handleInputChange} value={formData.age}/>
-          </div>
-
-          <div className='mb-3'>
-            <label htmlFor='height' className='form-label'>
-              height
-            </label>
-            <input type='text' className='form-control' id='height' name='height' onChange={handleInputChange} value={formData.height}/>
-          </div>
-
-          <button type='submit' className='btn btn-primary'>
-            submit
-          </button>
-        </form>
-
-        <table className='table table-striped table-bordered table-hover'>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Men</th>
-            <th>age</th>
-            <th>height</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction) => (
-            <tr key={transaction.id}>
-              <td>{transaction.id}</td>
-              <td>{transaction.name}</td>
-              <td>{transaction.men ? 'Yes' : 'No'}</td>
-              <td>{transaction.age}</td>
-              <td>{transaction.height}</td>
-            </tr>
-          ))}
-        </tbody>
-        </table>
-      </div>
+        <div>
+          <label>
+            Gender:
+            <select
+              value={men}
+              onChange={(e) => setMen(e.target.value === 'true')}
+              required
+            >
+              <option value={true}>Male</option>
+              <option value={false}>Female</option>
+            </select>
+          </label>
+        </div>
+        <button type="submit">Predict Weight</button>
+      </form>
+      {predictedWeight !== null && (
+        <div>
+          <h2>Predicted Weight: {predictedWeight.toFixed(2)} kg</h2>
+        </div>
+      )}
     </div>
-  )
-  }
+  );
+}
 
 export default App;
