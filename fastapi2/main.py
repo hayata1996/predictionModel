@@ -11,8 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 origins = [
     "http://localhost:3000",
-    #"http://localhost:8000",
-
 ]
 
 app.add_middleware(
@@ -25,11 +23,10 @@ app.add_middleware(
 
 #pydantic model
 class TransactionBase(BaseModel):
-    amount: float
-    category: str
-    description: str
-    is_income: bool
-    date: str
+    name: str
+    men: bool
+    age: int
+    height: float
     
 #grand son of pydantic model
 class TransactionModel(TransactionBase):
@@ -81,3 +78,12 @@ async def update_transaction(transaction_id: int, transaction: TransactionBase, 
     db.refresh(db_transaction)
     return db_transaction
 
+@app.delete("/transactions/{transaction_id}", response_model=TransactionModel)
+async def delete_transaction(transaction_id: int, db: db_dependency):
+    db_transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
+    if db_transaction is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    db.delete(db_transaction)
+    db.commit()
+    return db_transaction
+    

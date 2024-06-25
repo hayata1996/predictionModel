@@ -4,12 +4,12 @@ import api from './api'
 const App = () => {
   const [transactions, setTransactions] = useState([]);
   const [formData, setFormData] = useState({
-    amount: '',
-    category: '',
-    description: '',
-    is_income: false,
-    date: ''
+    name: '',
+    men: false,
+    age: '',
+    height: ''
   });
+//この辞書型は、formDataの初期値を設定している。
 
   const fetchTransactions = async () => {
     try {
@@ -28,7 +28,7 @@ const App = () => {
 //if you take this ', []' out, it will run the fetchTransactions() infinitely, again and again and again....
 
 
-
+//checkbox の変更を検知するための関数
   const handleInputChange = (event) => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
     setFormData({
@@ -42,11 +42,10 @@ const App = () => {
     await api.post('/transactions/', formData);
     fetchTransactions();
     setFormData({
-      amount: '',
-      category: '',
-      description: '',
-      is_income: false,
-      date: ''
+      name: '',
+      men: false,
+      age: '',
+      height: ''
     });
   };
 
@@ -55,7 +54,7 @@ const App = () => {
       <nav className='navbar-dark bg-primary'>
         <div className='container-fluid'>
           <a className='navbar-brand' href='#'>
-            Finance App
+            Weight Prediction App
           </a>
         </div>
       </nav>  
@@ -64,65 +63,56 @@ const App = () => {
         <form onSubmit={handleFormSubmit}>
 
           <div className='mb-3 mt-3'>
-            <label htmlFor='amount' className='form-label'>
-              Amount
+            <label htmlFor='name' className='form-label'>
+              name
             </label>
-            <input type='text' className='form-control' id='amount' name='amount' onChange={handleInputChange} value={formData.amount}/>
+            <input type='text' className='form-control' id='name' name='name' onChange={handleInputChange} value={formData.name}/>
           </div>
 
           <div className='mb-3'>
-            <label htmlFor='category' className='form-label'>
-              Category
+            <label htmlFor='men' className='form-label'>
+              men
             </label>
-            <input type='text' className='form-control' id='category' name='category' onChange={handleInputChange} value={formData.category}/>
+            <input type='checkbox' id='men' name='men' onChange={handleInputChange} value={formData.men}/>
           </div>
 
           <div className='mb-3'>
-            <label htmlFor='description' className='form-label'>
-              Description
+            <label htmlFor='age' className='form-label'>
+              age
             </label>
-            <input type='text' className='form-control' id='description' name='description' onChange={handleInputChange} value={formData.description}/>
+            <input type='text' className='form-control' id='age' name='age' onChange={handleInputChange} value={formData.age}/>
           </div>
 
           <div className='mb-3'>
-            <label htmlFor='is_income' className='form-label'>
-              Income ?
+            <label htmlFor='height' className='form-label'>
+              height
             </label>
-            <input type='checkbox' id='is_income' name='is_income' onChange={handleInputChange} value={formData.is_income}/>
-          </div>
-
-          <div className='mb-3'>
-            <label htmlFor='date' className='form-label'>
-              Date
-            </label>
-            <input type='text' className='form-control' id='date' name='date' onChange={handleInputChange} value={formData.date}/>
+            <input type='text' className='form-control' id='height' name='height' onChange={handleInputChange} value={formData.height}/>
           </div>
 
           <button type='submit' className='btn btn-primary'>
             submit
           </button>
-
         </form>
+
         <table className='table table-striped table-bordered table-hover'>
         <thead>
           <tr>
             <th>ID</th>
-            <th>Amount</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Income</th>
-            <th>Date</th>
+            <th>Name</th>
+            <th>Men</th>
+            <th>age</th>
+            <th>height</th>
           </tr>
         </thead>
         <tbody>
           {transactions.map((transaction) => (
             <tr key={transaction.id}>
               <td>{transaction.id}</td>
-              <td>{transaction.amount}</td>
-              <td>{transaction.category}</td>
-              <td>{transaction.description}</td>
-              <td>{transaction.is_income ? 'Yes' : 'No'}</td>
-              <td>{transaction.date}</td>
+              <td>{transaction.name}</td>
+              <td>{transaction.men ? 'Yes' : 'No'}</td>
+              <td>{transaction.age}</td>
+              <td>{transaction.height}</td>
             </tr>
           ))}
         </tbody>
