@@ -10,6 +10,7 @@ Basically, A web app using React, fastAPI and ML.I split this work into two part
 
 2024/06/25 update:
 Have modified front side such as columns.
+
 2024/06/26 update:
 Created Minimum Viable Product in dev branch.
 
