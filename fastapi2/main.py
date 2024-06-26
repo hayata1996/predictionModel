@@ -94,7 +94,7 @@ async def delete_transaction(transaction_id: int, db: db_dependency):
 @app.post("/predict/", response_model=PredictionOutput)
 async def predict(data: PredictionInput):
     # Prepare the data for prediction
-    input_data = np.array([[data.men, data.height]])
+    input_data = np.array([[data.height, data.men]])
     # Make the prediction
-    predicted_weight = model.predict(input_data)[0]
+    predicted_weight = model.predict(input_data)
     return PredictionOutput(weight=predicted_weight)

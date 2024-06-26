@@ -6,6 +6,7 @@ function App() {
   const [men, setMen] = useState(true);
   const [predictedWeight, setPredictedWeight] = useState(null);
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -29,7 +30,12 @@ function App() {
             <input
               type="number"
               value={height}
-              onChange={(e) => setHeight(e.target.value)}
+              onChange={(e) => {
+                const value = parseFloat(e.target.value);
+                if (value >= 0) {
+                  setHeight(value);
+                }
+              }}
               required
             />
           </label>
